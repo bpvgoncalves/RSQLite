@@ -173,6 +173,8 @@ cpp11::list SqliteResultImpl::get_column_info() {
     names[i] = *it;
 
   cpp11::writable::strings types(cache.ncols_);
+  const char *decl;
+  cpp11::writable::strings decl_types(cache.ncols_);
   for (size_t i = 0; i < cache.ncols_; i++) {
     switch(types_[i]) {
     case DT_DATE:
@@ -188,9 +190,12 @@ cpp11::list SqliteResultImpl::get_column_info() {
       types[i] = Rf_type2char(DbColumnStorage::sexptype_from_datatype(types_[i]));
       break;
     }
+
+    decl = sqlite3_column_decltype(stmt, i);
+    decl_types[i] = decl ? decl : "NA";
   }
 
-  return cpp11::list({"name"_nm = names, "type"_nm = types});
+  return cpp11::list({"name"_nm = names, "type"_nm = types, ".declared_type"_nm = decl_types});
 }
 
 
